@@ -22,7 +22,21 @@ app.post('/:provider', (req, res) => {
   let { provider } = req.params
   let integration, base64JSON = req.query.t
 
-  let data = JSON.parse(Atob(base64JSON))
+  let notFound = () => {
+    res.status(404).send(`Integration not found: ${provider}`)
+  }
+
+  if (!base64JSON) {
+    return notFound()
+  }
+
+  let data = null
+  try {
+    data = JSON.parse(Atob(base64JSON))
+  } catch (e) {
+    return notFound()
+  }
+
   let { token, options } = data
   options || (options = {})
 
@@ -57,7 +71,7 @@ app.post('/:provider', (req, res) => {
     return res.status(200).send('Event type not implemented')
   }
 
-  res.status(404).send(`Integration not found: ${provider}`)
+  notFound()
 })
 
 app.post('/', (req, res) => {
